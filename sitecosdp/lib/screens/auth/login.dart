@@ -3,6 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:sitecosdp/screens/home/homebnav.dart';
 import 'package:sitecosdp/screens/auth/register.dart';
+import 'dart:io';
+import 'package:http/io_client.dart'; 
+import 'dart:convert';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -13,6 +16,45 @@ class Loginscreen extends StatefulWidget {
 
 class _LoginscreenState extends State<Loginscreen> {
   bool _obscurePassword = true;
+   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+
+ @override
+  void dispose() {
+    
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  login(String email,String password) async {
+  try {
+    // Create an HttpClient that ignores SSL certificate errors
+    var httpClient = HttpClient()
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    var ioClient = IOClient(httpClient);
+ 
+
+    var response = await ioClient.post(
+      Uri.parse('https://74bf-220-158-158-135.ngrok-free.app/api/verify_otp/'),  body: {
+       'email':email,
+       'password':password
+      },
+    );
+
+    var data = jsonDecode(response.body);
+    if (data['status'] == 'success') {
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return "destination page";
+      }));
+    } else {
+      print('Unexpected response: $data');
+    }
+  } catch (e) {
+    print('Error during API call: $e');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -111,10 +153,7 @@ class _LoginscreenState extends State<Loginscreen> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(context,
-                                MaterialPageRoute(builder: (_) {
-                              return Homebnav();
-                            }));
+                            login(_emailController.text, _passwordController.text);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF7A1CAC),
