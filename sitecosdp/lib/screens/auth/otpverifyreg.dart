@@ -1,19 +1,25 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:http/io_client.dart';
 import 'package:sitecosdp/screens/auth/login.dart';
+import 'package:sitecosdp/screens/auth/ngroklink.dart';
 
 class OTPVerifyPage extends StatefulWidget {
-  const OTPVerifyPage({super.key});
+  final String? otptoken;
+
+  const OTPVerifyPage({Key? key, this.otptoken}) : super(key: key);
 
   @override
   State<OTPVerifyPage> createState() => _OTPVerifyPageState();
 }
 
-class _OTPVerifyPageState extends State<OTPVerifyPage>
-    with SingleTickerProviderStateMixin {
-  final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
+class _OTPVerifyPageState extends State<OTPVerifyPage> {
+  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final List<TextEditingController> _controllers =
-      List.generate(4, (_) => TextEditingController());
+      List.generate(6, (_) => TextEditingController());
 
   @override
   void dispose() {
@@ -27,18 +33,46 @@ class _OTPVerifyPageState extends State<OTPVerifyPage>
   }
 
   void _onChanged(String value, int index) {
-    if (value.isNotEmpty && index < 3) {
+    if (value.isNotEmpty && index < 5) {
       _focusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
     }
   }
 
+  Future<void> otpverifyreg(String otp) async {
+    try {
+      var httpClient = HttpClient()
+        ..badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+      var ioClient = IOClient(httpClient);
+
+      var response = await ioClient.post(
+        Uri.parse('${apilink}verify-otp/'),
+        body: {'otp_token': widget.otptoken, 'otp': otp},
+      );
+
+      var data = jsonDecode(response.body);
+      if (data['message'] == 'Registration successful') {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => Loginscreen()));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? 'Verification failed')),
+        );
+      }
+    } catch (e) {
+      print('Error during API call: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error verifying OTP')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Color bgColor = const Color(0xFFEABDE6);
-    final Gradient gradient = LinearGradient(
-      colors: const [
+    final Gradient gradient = const LinearGradient(
+      colors: [
         Color(0xFFAA60C8),
         Color(0xFFD69ADE),
         Color(0xFFEABDE6),
@@ -49,7 +83,6 @@ class _OTPVerifyPageState extends State<OTPVerifyPage>
     );
 
     return Scaffold(
-      backgroundColor: bgColor,
       body: Container(
         decoration: BoxDecoration(gradient: gradient),
         child: Center(
@@ -67,9 +100,9 @@ class _OTPVerifyPageState extends State<OTPVerifyPage>
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (index) {
+                children: List.generate(6, (index) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       decoration: BoxDecoration(
@@ -84,7 +117,7 @@ class _OTPVerifyPageState extends State<OTPVerifyPage>
                         ],
                       ),
                       child: SizedBox(
-                        width: 60,
+                        width: 50,
                         height: 60,
                         child: TextField(
                           controller: _controllers[index],
@@ -93,7 +126,9 @@ class _OTPVerifyPageState extends State<OTPVerifyPage>
                           maxLength: 1,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             counterText: "",
@@ -101,7 +136,7 @@ class _OTPVerifyPageState extends State<OTPVerifyPage>
                           ),
                         ),
                       ),
-                    ).animate().scale(delay: (index * 200).ms),
+                    ).animate().scale(delay: (index * 100).ms),
                   );
                 }),
               ),
@@ -109,12 +144,13 @@ class _OTPVerifyPageState extends State<OTPVerifyPage>
               ElevatedButton(
                 onPressed: () {
                   String otp = _controllers.map((e) => e.text).join();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Entered OTP: $otp")),
-                  );
-
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => Loginscreen()));
+                  if (otp.length < 6) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Please enter full OTP")),
+                    );
+                    return;
+                  }
+                  otpverifyreg(otp);
                 },
                 style: ElevatedButton.styleFrom(
                   padding:
