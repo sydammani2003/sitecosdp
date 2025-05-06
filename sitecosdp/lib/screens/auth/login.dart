@@ -29,31 +29,31 @@ class _LoginscreenState extends State<Loginscreen> {
   }
 
   login(String email,String password) async {
-  try {
-    // Create an HttpClient that ignores SSL certificate errors
-    var httpClient = HttpClient()
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-    var ioClient = IOClient(httpClient);
+//   try {
+//     // Create an HttpClient that ignores SSL certificate errors
+//     var httpClient = HttpClient()
+//       ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+//     var ioClient = IOClient(httpClient);
  
 
-    var response = await ioClient.post(
-      Uri.parse('https://74bf-220-158-158-135.ngrok-free.app/api/verify_otp/'),  body: {
-       'email':email,
-       'password':password
-      },
-    );
+//     var response = await ioClient.post(
+//       Uri.parse('https://74bf-220-158-158-135.ngrok-free.app/api/verify_otp/'),  body: {
+//        'email':email,
+//        'password':password
+//       },
+//     );
 
-    var data = jsonDecode(response.body);
-    if (data['status'] == 'success') {
-      Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return "destination page";
-      }));
-    } else {
-      print('Unexpected response: $data');
-    }
-  } catch (e) {
-    print('Error during API call: $e');
-  }
+//     var data = jsonDecode(response.body);
+//     if (data['status'] == 'success') {
+//       Navigator.push(context, MaterialPageRoute(builder: (context) {
+//         return "destination page";
+//       }));
+//     } else {
+//       print('Unexpected response: $data');
+//     }
+//   } catch (e) {
+//     print('Error during API call: $e');
+//   }
 }
 
   @override

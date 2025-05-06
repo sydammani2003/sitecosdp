@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:sitecosdp/screens/auth/login.dart';
 import 'dart:io';
-import 'package:http/io_client.dart'; 
+import 'package:http/io_client.dart';
+import 'package:sitecosdp/screens/auth/otpverifyreg.dart'; 
 
 
 class Registerscreen extends StatefulWidget {
@@ -31,32 +32,32 @@ class _RegistrationPageState extends State<Registerscreen> {
   
 
   reg(String name,String email,String password) async {
-  try {
-    // Create an HttpClient that ignores SSL certificate errors
-    var httpClient = HttpClient()
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-    var ioClient = IOClient(httpClient);
+//   try {
+//     // Create an HttpClient that ignores SSL certificate errors
+//     var httpClient = HttpClient()
+//       ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+//     var ioClient = IOClient(httpClient);
  
 
-    var response = await ioClient.post(
-      Uri.parse('https://74bf-220-158-158-135.ngrok-free.app/api/verify_otp/'),  body: {
-       'name':name,
-       'email':email,
-       'password':password
-      },
-    );
+//     var response = await ioClient.post(
+//       Uri.parse('https://74bf-220-158-158-135.ngrok-free.app/api/verify_otp/'),  body: {
+//        'name':name,
+//        'email':email,
+//        'password':password
+//       },
+//     );
 
-    var data = jsonDecode(response.body);
-    if (data['status'] == 'success') {
-      Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return "destination page";
-      }));
-    } else {
-      print('Unexpected response: $data');
-    }
-  } catch (e) {
-    print('Error during API call: $e');
-  }
+//     var data = jsonDecode(response.body);
+//     if (data['status'] == 'success') {
+//       Navigator.push(context, MaterialPageRoute(builder: (context) {
+//         return "destination page";
+//       }));
+//     } else {
+//       print('Unexpected response: $data');
+//     }
+//   } catch (e) {
+//     print('Error during API call: $e');
+//   }
 }
 
   @override
@@ -161,7 +162,7 @@ class _RegistrationPageState extends State<Registerscreen> {
                       onPressed: () {
                         Navigator.pushReplacement(context,
                             MaterialPageRoute(builder: (_) {
-                          return Loginscreen();
+                          return OTPVerifyPage();
                         }));
                       },
                       child: Text(
